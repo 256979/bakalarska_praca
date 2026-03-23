@@ -125,4 +125,5 @@ for feature in features:
 
 
 # Saving results
-results_df.to_excel("clustering_results.csv", index=False)
+results_df = pd.DataFrame(results)
+results_df.to_csv("clustering_results.csv", index=False)
