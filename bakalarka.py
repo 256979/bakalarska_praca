@@ -130,10 +130,10 @@ for i in range(len(dicom)):
     vox_P2     = data_P2[seg]
     vox_P3     = data_P3[seg]
 
-    # ================================
+
     # DELTA ARRAYS (voxel-level HU changes)
     # Naming: Delta_<from>_<to>
-    # ================================
+
     vox_Delta_N_P1  = vox_P1 - vox_Native   # Native → Phase 1
     vox_Delta_N_P2  = vox_P2 - vox_Native   # Native → Phase 2
     vox_Delta_N_P3  = vox_P3 - vox_Native   # Native → Phase 3
@@ -141,9 +141,8 @@ for i in range(len(dicom)):
     vox_Delta_P2_P3 = vox_P3 - vox_P2       # Phase 2 → Phase 3
     vox_Delta_P1_P3 = vox_P3 - vox_P1       # Phase 1 → Phase 3
 
-    # ================================
-    # HELPER: entropy and uniformity
-    # ================================
+
+
     def _entropy(arr):
         h, _ = np.histogram(arr, bins=256, density=True)
         h = h + 1e-12
@@ -154,9 +153,9 @@ for i in range(len(dicom)):
         h = h + 1e-12
         return np.sum(h ** 2)
 
-    # ================================
+
     # MEAN
-    # ================================
+
     Mean_Native = vox_Native.mean()
     Mean_P1     = vox_P1.mean()
     Mean_P2     = vox_P2.mean()
@@ -166,9 +165,9 @@ for i in range(len(dicom)):
 
     print(f"Mean  Native:{Mean_Native:.2f}  P1:{Mean_P1:.2f}  P2:{Mean_P2:.2f}  P3:{Mean_P3:.2f}")
 
-    # ================================
+
     # MEDIAN
-    # ================================
+
     Median_Native = np.median(vox_Native)
     Median_P1     = np.median(vox_P1)
     Median_P2     = np.median(vox_P2)
@@ -176,9 +175,9 @@ for i in range(len(dicom)):
     Max_Median    = max(Median_Native, Median_P1, Median_P2, Median_P3)
     Min_Median    = min(Median_Native, Median_P1, Median_P2, Median_P3)
 
-    # ================================
+
     # MIN INTENSITY
-    # ================================
+
     Min_Native = np.min(vox_Native)
     Min_P1     = np.min(vox_P1)
     Min_P2     = np.min(vox_P2)
@@ -186,9 +185,9 @@ for i in range(len(dicom)):
     Max_Min    = max(Min_Native, Min_P1, Min_P2, Min_P3)
     Min_Min    = min(Min_Native, Min_P1, Min_P2, Min_P3)
 
-    # ================================
+
     # MAX INTENSITY
-    # ================================
+
     Max_Native = np.max(vox_Native)
     Max_P1     = np.max(vox_P1)
     Max_P2     = np.max(vox_P2)
@@ -196,9 +195,9 @@ for i in range(len(dicom)):
     Max_Max    = max(Max_Native, Max_P1, Max_P2, Max_P3)
     Min_Max    = min(Max_Native, Max_P1, Max_P2, Max_P3)
 
-    # ================================
+
     # RANGE
-    # ================================
+
     Range_Native     = Max_Native - Min_Native
     Range_P1         = Max_P1     - Min_P1
     Range_P2         = Max_P2     - Min_P2
@@ -213,9 +212,9 @@ for i in range(len(dicom)):
     Range_Delta_P2_P3 = np.max(vox_Delta_P2_P3) - np.min(vox_Delta_P2_P3)
     Range_Delta_P1_P3 = np.max(vox_Delta_P1_P3) - np.min(vox_Delta_P1_P3)
 
-    # ================================
+
     # IQR
-    # ================================
+
     IQR_Native     = np.percentile(vox_Native, 75) - np.percentile(vox_Native, 25)
     IQR_P1         = np.percentile(vox_P1,     75) - np.percentile(vox_P1,     25)
     IQR_P2         = np.percentile(vox_P2,     75) - np.percentile(vox_P2,     25)
@@ -230,9 +229,9 @@ for i in range(len(dicom)):
     IQR_Delta_P2_P3 = np.percentile(vox_Delta_P2_P3, 75) - np.percentile(vox_Delta_P2_P3, 25)
     IQR_Delta_P1_P3 = np.percentile(vox_Delta_P1_P3, 75) - np.percentile(vox_Delta_P1_P3, 25)
 
-    # ================================
+
     # TAI  (Thrombus Attenuation Increase vs Native)
-    # ================================
+
     TAI_P1  = Mean_P1 - Mean_Native
     TAI_P2  = Mean_P2 - Mean_Native
     TAI_P3  = Mean_P3 - Mean_Native
@@ -241,9 +240,9 @@ for i in range(len(dicom)):
 
     print(f"TAI   P1:{TAI_P1:.2f}  P2:{TAI_P2:.2f}  P3:{TAI_P3:.2f}")
 
-    # ================================
+
     # TAG  (between adjacent phases)
-    # ================================
+
     TAG_N_P1  = Mean_P1 - Mean_Native
     TAG_P1_P2 = Mean_P2 - Mean_P1
     TAG_P2_P3 = Mean_P3 - Mean_P2
@@ -254,9 +253,9 @@ for i in range(len(dicom)):
     print(f"TAG   N→P1:{TAG_N_P1:.2f}  P1→P2:{TAG_P1_P2:.2f}  P2→P3:{TAG_P2_P3:.2f}  P1→P3:{TAG_P1_P3:.2f}")
     print("-" * 40)
 
-    # ================================
+
     # STANDARD DEVIATION
-    # ================================
+
     SD_Native = vox_Native.std(ddof=1)
     SD_P1     = vox_P1.std(ddof=1)
     SD_P2     = vox_P2.std(ddof=1)
@@ -280,9 +279,9 @@ for i in range(len(dicom)):
 
     print(f"SD    Native:{SD_Native:.2f}  P1:{SD_P1:.2f}  P2:{SD_P2:.2f}  P3:{SD_P3:.2f}")
 
-    # ================================
+
     # VOXEL MIN / MAX OF DELTA ARRAYS
-    # ================================
+
     VoxMin_Delta_N_P1  = np.min(vox_Delta_N_P1)
     VoxMax_Delta_N_P1  = np.max(vox_Delta_N_P1)
     VoxMin_Delta_N_P2  = np.min(vox_Delta_N_P2)
@@ -296,9 +295,9 @@ for i in range(len(dicom)):
     VoxMin_Delta_P1_P3 = np.min(vox_Delta_P1_P3)
     VoxMax_Delta_P1_P3 = np.max(vox_Delta_P1_P3)
 
-    # ================================
+
     # VARIANCE
-    # ================================
+
     Var_Native     = np.var(vox_Native, ddof=1)
     Var_P1         = np.var(vox_P1,     ddof=1)
     Var_P2         = np.var(vox_P2,     ddof=1)
@@ -315,9 +314,9 @@ for i in range(len(dicom)):
 
     print(f"Var   Native:{Var_Native:.2f}  P1:{Var_P1:.2f}  P2:{Var_P2:.2f}  P3:{Var_P3:.2f}")
 
-    # ================================
+
     # SKEWNESS
-    # ================================
+
     Skew_Native     = skew(vox_Native)
     Skew_P1         = skew(vox_P1)
     Skew_P2         = skew(vox_P2)
@@ -334,9 +333,9 @@ for i in range(len(dicom)):
 
     print(f"Skew  Native:{Skew_Native:.4f}  P1:{Skew_P1:.4f}  P2:{Skew_P2:.4f}  P3:{Skew_P3:.4f}")
 
-    # ================================
+
     # KURTOSIS
-    # ================================
+
     Kurt_Native     = kurtosis(vox_Native)
     Kurt_P1         = kurtosis(vox_P1)
     Kurt_P2         = kurtosis(vox_P2)
@@ -353,9 +352,9 @@ for i in range(len(dicom)):
 
     print(f"Kurt  Native:{Kurt_Native:.4f}  P1:{Kurt_P1:.4f}  P2:{Kurt_P2:.4f}  P3:{Kurt_P3:.4f}")
 
-    # ================================
+
     # ENTROPY
-    # ================================
+
     Entropy_Native     = _entropy(vox_Native)
     Entropy_P1         = _entropy(vox_P1)
     Entropy_P2         = _entropy(vox_P2)
@@ -372,9 +371,9 @@ for i in range(len(dicom)):
 
     print(f"Entr  Native:{Entropy_Native:.4f}  P1:{Entropy_P1:.4f}  P2:{Entropy_P2:.4f}  P3:{Entropy_P3:.4f}")
 
-    # ================================
+
     # UNIFORMITY
-    # ================================
+
     Uniformity_Native     = _uniformity(vox_Native)
     Uniformity_P1         = _uniformity(vox_P1)
     Uniformity_P2         = _uniformity(vox_P2)
@@ -391,13 +390,7 @@ for i in range(len(dicom)):
 
     print(f"Unif  Native:{Uniformity_Native:.6f}  P1:{Uniformity_P1:.6f}  P2:{Uniformity_P2:.6f}  P3:{Uniformity_P3:.6f}")
 
-    # ==============================
-    # BUILD FEATURE DICTIONARY
-    # Convention:
-    #   <Statistic>_<Phase>           for per-phase values
-    #   <Statistic>_Delta_<from>_<to> for voxel-level delta values
-    #   Max/Min_<Statistic>           for cross-phase aggregates
-    # ==============================
+
     patient_data = {
         "PatientIndex": index[i],
         "DICOM_ID":     dicom[i],
