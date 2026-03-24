@@ -110,7 +110,19 @@ for feature in features:
 
     # Graphs
 
-    plt.figure(figsize=(10, 4))
+    # 2. Dendrogram with patient IDs on x-axis and values as subtitle
+    ax_dendro = axes[1]
+    dendrogram(
+        Z,
+        labels=ids_feature,        # patient IDs as leaf labels
+        leaf_rotation=90,
+        leaf_font_size=7,
+        ax=ax_dendro,
+        color_threshold=Z[-(best_k_sil - 1), 2] if best_k_sil > 1 else 0,
+    )
+    ax_dendro.set_title(f"{feature}\nDendrogram (Ward)  K={best_k_sil}")
+    ax_dendro.set_xlabel("Patient ID")
+    ax_dendro.set_ylabel("Distance")
 
     plt.subplot(1, 2, 1)
     plt.hist(data, bins=10)
