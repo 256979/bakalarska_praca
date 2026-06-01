@@ -1,0 +1,9 @@
+numpy
+pandas
+scikit-learn
+matplotlib
+scipy
+nibabel
+pydicom
+SimpleITK
+tomli

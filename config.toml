@@ -1,0 +1,29 @@
+[paths]
+# Root folder containing all input datasets
+ROOT = "C:/path/to/dataset"
+
+# Folder where CSV outputs will be saved
+OUT_CSV = "C:/path/to/output"
+
+
+[export]
+# Directory for histogram images
+histogram_dir = "histograms"
+
+# Directory for exported thrombus slices
+slice_export_dir = "thrombus_slices"
+
+# Directory for all plots (scatterplots, boxplots, heatmaps, etc.)
+plots_dir = "plots"
+
+# Directory for analysis results of significant features
+significant_feature_dir = "significant_feature_analysis"
+
+
+
+[statistics]
+# p-value threshold for statistical significance tests
+p_value_threshold = 0.05
+
+# Silhouette score threshold for evaluating clustering quality
+silhouette_threshold = 0.50
