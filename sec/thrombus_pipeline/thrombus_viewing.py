@@ -34,10 +34,21 @@ def _render_slice(vol, seg, z, canvas_size):
     crop = slice_masked[y0:y1+1, x0:x1+1]
     h, w = crop.shape
 
+    target = int(canvas_size * 0.75)
+    scale = target / max(h, w)
+
+    new_h = max(1, int(h * scale))
+    new_w = max(1, int(w * scale))
+
+    crop_resized = np.full((new_h, new_w), np.nan)
+    yy = (np.linspace(0, h - 1, new_h)).astype(int)
+    xx = (np.linspace(0, w - 1, new_w)).astype(int)
+    crop_resized[:, :] = crop[np.ix_(yy, xx)]
+
     canvas = np.full((canvas_size, canvas_size), np.nan)
-    y_off = (canvas_size - h) // 2
-    x_off = (canvas_size - w) // 2
-    canvas[y_off:y_off+h, x_off:x_off+w] = crop
+    y_off = (canvas_size - new_h) // 2
+    x_off = (canvas_size - new_w) // 2
+    canvas[y_off:y_off+new_h, x_off:x_off+new_w] = crop_resized
 
     return canvas
 
@@ -55,13 +66,9 @@ This function:
     - Identifies slices containing thrombus.
     - Computes a consistent canvas size.
     - For each phase (Native, P1, P2, P3):
-        * Creates two subfolders:
-              phase_name/               → normal PNGs
-              phase_name_annotated/     → PNGs with HU values printed inside
-        * Renders each slice using _render_slice().
-        * Saves:
-              slice_###.png             → normal version
-              slice_###_annotated.png   → version with HU labels
+        * Creates subfolder phase_name/ with normal PNGs
+        * Renders each slice using _render_slice()
+        * Saves normal slices only (no annotation)
     - Skips patients with missing data.
     - Prints progress and completion messages.
 '''
@@ -112,13 +119,8 @@ def export_thrombus_slices(ROOT, OUT_DIR):
 
         for phase_name, vol in phases.items():
 
-            # normal images
             phase_dir = os.path.join(patient_out, phase_name)
             os.makedirs(phase_dir, exist_ok=True)
-
-            # annotated images
-            phase_dir_annot = os.path.join(patient_out, f"{phase_name}_annotated")
-            os.makedirs(phase_dir_annot, exist_ok=True)
 
             print(f"  Processing {phase_name}")
 
@@ -128,7 +130,6 @@ def export_thrombus_slices(ROOT, OUT_DIR):
                 if rendered is None:
                     continue
 
-                # NORMAL PNG (no numbers)
                 out_png = os.path.join(phase_dir, f"slice_{z:03d}.png")
 
                 fig = plt.figure(figsize=(8, 8), facecolor="#FFF9D6")
@@ -145,33 +146,7 @@ def export_thrombus_slices(ROOT, OUT_DIR):
                 plt.savefig(out_png, dpi=300, bbox_inches="tight", pad_inches=0.08)
                 plt.close(fig)
 
-                # ANNOTATED PNG (with HU values)
-                out_png_ann = os.path.join(phase_dir_annot, f"slice_{z:03d}_annotated.png")
-
-                fig = plt.figure(figsize=(8, 8), facecolor="#FFF9D6")
-                ax = plt.gca()
-                ax.set_facecolor("#FFF9D6")
-
-                plt.imshow(rendered, cmap=cmap, interpolation="nearest")
-                plt.title(f"Patient {pid} | {phase_name} | Slice {z} (Annotated)", fontsize=14)
-                plt.axis("off")
-
-                # overlay HU values
-                for y in range(rendered.shape[0]):
-                    for x in range(rendered.shape[1]):
-                        val = rendered[y, x]
-                        if not np.isnan(val):
-                            plt.text(
-                                x, y, f"{int(val)}",
-                                ha="center", va="center",
-                                fontsize=5, color="yellow"
-                            )
-
-                plt.savefig(out_png_ann, dpi=300, bbox_inches="tight", pad_inches=0.08)
-                plt.close(fig)
-
     print("\nDONE exporting slices.")
-
 
 
 

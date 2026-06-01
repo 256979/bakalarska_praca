@@ -19,13 +19,9 @@ This function:
     Saves the resulting figure as a PNG file in the specified output directory
     Returns the full path to the saved histogram image
 
-Notes:
-    
-    The output directory must be provided by in the initial input prompts
 '''
 
 def plot_histograms(vox_native, vox_p1, vox_p2, vox_p3, patient_id, out_dir):
-
 
     os.makedirs(out_dir, exist_ok=True)
 
@@ -33,11 +29,22 @@ def plot_histograms(vox_native, vox_p1, vox_p2, vox_p3, patient_id, out_dir):
     labels = ['Native', 'Phase 1', 'Phase 2', 'Phase 3']
     colors = ['#4C72B0', '#55A868', '#C44E52', '#8172B2']
 
+    global_min = min(arr.min() for arr in phases)
+    global_max = max(arr.max() for arr in phases)
+
     fig, axes = plt.subplots(2, 2, figsize=(50, 25), sharey=False)
     axes = axes.flatten()
 
     for ax, arr, label, color in zip(axes, phases, labels, colors):
-        ax.hist(arr, bins=80, color=color, edgecolor='white', linewidth=0.3, alpha=0.9)
+        ax.hist(
+            arr,
+            bins=80,
+            range=(global_min, global_max),
+            color=color,
+            edgecolor='white',
+            linewidth=0.3,
+            alpha=0.9
+        )
 
         ax.axvline(arr.mean(), color='black', linestyle='--',
                    linewidth=1.7, label=f"Mean: {arr.mean():.1f}")

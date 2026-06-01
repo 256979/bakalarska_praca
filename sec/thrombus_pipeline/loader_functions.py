@@ -132,11 +132,13 @@ This function:
     Returns a sorted list of all matching patient directories
 '''
 def find_patients(root):
-    return sorted([
-        d for d in glob.glob(os.path.join(root, "*"))
-        if os.path.isdir(d) and os.path.basename(d).isdigit()
-    ])
-
+    return sorted(
+        [
+            d for d in glob.glob(os.path.join(root, "*"))
+            if os.path.isdir(d) and os.path.basename(d).isdigit()
+        ],
+        key=lambda p: int(os.path.basename(p))
+    )
 
 
 # FIND DICOM
