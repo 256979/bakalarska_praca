@@ -69,23 +69,23 @@ These thresholds are used in cluster_plots_stats.py.
 
 ## 1.1 Dataset Structure
 
-ROOT/
-    Patient_001/
-        Native/
-            0001.dcm
-            0002.dcm
-            ...
-        P1.nii.gz
-        P2.nii.gz
-        P3.nii.gz
-        thrombus_mask.nii.gz
-
-    Patient_002/
-        Native/
-        P1.nii.gz
-        P2.nii.gz
-        P3.nii.gz
-        thrombus_mask.nii.gz
+    ROOT/
+        Patient_001/
+            Native/
+                0001.dcm
+                0002.dcm
+                ...
+            P1.nii.gz
+            P2.nii.gz
+            P3.nii.gz
+            thrombus_mask.nii.gz
+    
+        Patient_002/
+            Native/
+            P1.nii.gz
+            P2.nii.gz
+            P3.nii.gz
+            thrombus_mask.nii.gz
 
 ## 1.2 Required Modalities
 
