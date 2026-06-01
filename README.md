@@ -1,61 +1,39 @@
 # Automated Thrombus Analysis Pipeline — Bachelor’s Thesis Documentation
 
-This repository contains a fully automated pipeline for thrombus analysis from mCTA imaging.
-The system performs feature extraction, histogram analysis, per‑feature clustering, significance testing,
-patient‑level clustering, and thrombus slice export. This document describes the implemented software pipeline,
-its algorithmic structure, input/output formats, properties, limitations, and potential applications.
+Automated pipeline for thrombus analysis from multiphase CT angiography (mCTA).
+The system performs feature extraction, histogram analysis, per‑feature clustering,
+statistical testing, patient‑level clustering, and thrombus slice export.
 
-# 0. Running the Pipeline
+The pipeline was fully implemented and tested on Linux.
 
-The pipeline was implemented and tested on Linux.
+This document describes the software environment, installation steps, dataset requirements,
+configuration, and module‑level functionality. More detailed descriptions of inputs and outputs
+are included directly inside the code of each module.
 
-Run the pipeline using:
-    python main.py
+# 1. Environment
 
-The script loads configuration parameters from config.toml using the tomli library. It reads ROOT and OUT_CSV,
-loads all export directory names, the p‑value threshold, and the silhouette threshold, executes all processing steps,
-and writes outputs into the configured folders.
+Python version:
+    Python 3.10.12
 
-# Configuration File (config.toml)
+Required packages (requirements.txt is provided):
+    numpy
+    pandas
+    matplotlib
+    scipy
+    scikit-learn
+    nibabel
+    pydicom
+    SimpleITK
+    tomli
 
-All adjustable parameters are defined here.
+# 2. Project Structure
 
-[paths]
-ROOT = "/mnt/md0/data/thrombus_dataset"
-OUT_CSV = "/mnt/md0/results/thrombus_analysis"
-
-If ROOT does not exist, the pipeline prints an error and stops.
-If OUT_CSV does not exist, it is created automatically.
-Both must be absolute paths.
-
-Command‑line override:
-    python main.py --root /path/to/data --out /path/to/output
-
-If no overrides are provided, values from config.toml are used.
-
-[export]
-histogram_dir = "histograms"
-plots_dir = "plots"
-significant_feature_dir = "significant_feature_analysis"
-slice_export_dir = "thrombus_slices"
-
-These folders are created automatically if missing.
-
-[statistics]
-p_value_threshold = 0.05
-silhouette_threshold = 0.50
-
-These thresholds are used in cluster_plots_stats.py.
-
-# 0.1 Dataset Structure
-
-    bakalarska_praca/
+bakalarska_praca/
     │
     ├── main.py
     ├── config.toml
     ├── pyproject.toml
     ├── README.md
-    ├
     │
     └── sec/
         └── thrombus_pipeline/
@@ -65,235 +43,228 @@ These thresholds are used in cluster_plots_stats.py.
             ├── loader_functions.py
             └── thrombus_viewing.py
 
-# 1. Dataset Requirements
+# 3. Step‑by‑Step Installation and Running
 
-## 1.1 Dataset Structure
+## 3.1 Install Python
+Install Python 3.10.x from:
+    https://www.python.org/downloads/
 
-    ROOT/
-        Patient_001/
-            Native/
-                0001.dcm
-                0002.dcm
-                ...
-            P1.nii.gz
-            P2.nii.gz
-            P3.nii.gz
-            thrombus_mask.nii.gz
-    
-        Patient_002/
-            Native/
-            P1.nii.gz
-            P2.nii.gz
-            P3.nii.gz
-            thrombus_mask.nii.gz
+Verify installation:
+    python --version
 
-## 1.2 Required Modalities
+## 3.2 Download the repository
+Either:
+    git clone <repository_url>
+    cd <repository_folder>
 
-Modality | Format | Description
-Native | DICOM | Non‑contrast CT
-P1 | NIfTI | First contrast phase
-P2 | NIfTI | Second contrast phase
-P3 | NIfTI | Third contrast phase
-thrombus_mask | NIfTI | Binary mask aligned to all phases
+Or download ZIP → extract → open terminal inside the folder.
 
-All NIfTI volumes must share identical geometry.
-The thrombus mask must align with all phases.
-Missing files cause the patient to be skipped.
+The folder must contain the structure shown above.
 
-## 1.3 Naming Requirements
+## 3.3 Create and activate a virtual environment (recommended)
 
-These naming rules are mandatory. Misnamed files or folders cause skipping or failure.
+Create:
+    python -m venv .venv
 
-### 1.3.1 Patient Folder Names
+Activate:
+    Linux/macOS:
+        source .venv/bin/activate
+    Windows PowerShell:
+        .venv\Scripts\Activate.ps1
 
-Folder name must contain only digits (folder_name.isdigit()).
+Verify activation:
+    (.venv) appears in the terminal prompt.
 
-Valid: 15, 002, 73
-Invalid: Patient_15, P15, 15a, patient15
+## 3.4 Install dependencies
 
-### 1.3.2 Native CT Folder Name
-
-Must be named exactly "nativ" or "native" (case‑insensitive).
-
-Valid: nativ, NATIV, Nativ, Native
-Invalid: DICOM, CT
-
-Must contain a single DICOM series.
-
-### 1.3.3 Segmentation File Names
-
-Must contain "seg" in the filename.
-
-Valid: thrombus_seg.nii.gz, segmentation.nii.gz, 15_seg_mask.nii
-Invalid: mask.nii.gz, thrombus_mask.nii.gz, label_mask.nii.gz
-
-Must be a NIfTI file and non‑empty.
-
-### 1.3.4 Phase File Naming Requirements
-
-Phase files must:
-- be NIfTI (.nii or .nii.gz)
-- not contain "seg", "mask", "label"
-- contain an integer indicating the phase number
-
-Prefix removal rule:
-18_phase1_registered.nii.gz → prefix removed → phase1_registered.nii.gz → phase = 1
-
-Exactly one file must exist for each phase: P1, P2, P3.
-
-### 1.3.5 Orientation Requirements
-
-All NIfTI files must be in RAS+ orientation or convertible to it.
-Orientation codes must match across CT, segmentation, P1, P2, P3.
-If not, the patient is skipped.
-
-# 2. Software
-
-Python version: 3.10.12
-
-External packages:
-
-numpy — numerical operations
-pandas — CSV I/O
-matplotlib — plotting
-scipy — clustering, statistics
-scikit‑learn — standardization, silhouette score
-nibabel — loading NIfTI
-pydicom — reading DICOM
-SimpleITK — robust DICOM loading
-tomli — reading TOML (Python ≤3.10)
-
-
-
-Install dependencies:
+Install:
     pip install -r requirements.txt
 
-Or:
-    pip install numpy pandas matplotlib scipy scikit-learn nibabel pydicom SimpleITK tomli
+Verify:
+    pip list
 
-# 3. Pipeline Overview
+## 3.5 Configure paths in config.toml
 
-The pipeline consists of five modules located in sec/thrombus_pipeline, executed by main.py:
+[paths]
+ROOT = "/absolute/path/to/dataset"
+OUT_CSV = "/absolute/path/to/output"
 
-1. feature_extraction.py — feature extraction
-2. histogram_function.py — histogram generation
-3. cluster_plots_stats.py — feature clustering + statistics
-4. feature_and_patient_overview.py — significant feature analysis
-5. thrombus_viewing.py — thrombus slice export
+[export]
+histogram_dir = "histograms"
+plots_dir = "plots"
+significant_feature_dir = "significant_feature_analysis"
+slice_export_dir = "thrombus_slices"
 
-main.py runs the entire pipeline and produces all outputs.
+[statistics]
+p_value_threshold = 0.05
+silhouette_threshold = 0.50
 
-# 4. Module Documentation
+Note:
+    Paths can also be set through command line when running main.py:
+        python main.py --root /path/to/data --out /path/to/output
 
-Briefly describes the function of each module - more detailed description is located in the code
+## 3.6 Dataset structure (visualisation preserved)
 
-## 4.1 feature_extraction_new.py
+ROOT/
+    001/
+        native/
+            0001.dcm
+            0002.dcm
+            ...
+        P1.nii.gz
+        P2.nii.gz
+        P3.nii.gz
+        thrombus_seg.nii.gz
 
-Extracts intensity‑based features from thrombus regions across all CT phases.
+    002/
+        native/
+        P1.nii.gz
+        P2.nii.gz
+        P3.nii.gz
+        thrombus_seg.nii.gz
 
-Returns a DataFrame containing:
-- patient ID
-- mean, SD, min, max
-- median
-- percentiles (P10, P25, P75, P90)
-- skewness, kurtosis
-- energy, entropy
-- range, IQR
-- phase‑to‑phase deltas
-- native‑to‑phase deltas
+## 3.7 Dataset rules (must be satisfied)
 
-## 4.2 histogram_function.py
+    - Patient folder name must contain digits only.
+    - Native CT folder must be named “native” or “nativ”.
+    - Segmentation file must contain “seg” in the filename.
+    - Phase files must be NIfTI and contain a phase number.
+    - All NIfTI files must share identical geometry and RAS+ orientation.
 
-Generates histograms for each patient and phase.
+If these conditions are not met, the patient is skipped.
+
+## 3.8 Run the pipeline
+
+Standard run (uses config.toml):
+    python main.py
+
+Run with command‑line overrides:
+    python main.py --root /path/to/dataset --out /path/to/output
+
+The script will:
+    - load configuration
+    - scan all patients in ROOT
+    - run feature extraction, histograms, clustering, and slice export
+    - write outputs into OUT_CSV and its subfolders
+
+![]("C:\Users\mataf\OneDrive\Documents\pipeline.pdf")
+
+## 3.9 Verifying successful execution
+
+The pipeline ran successfully **provided that the dataset contained files meeting all required criteria**
+and the following folders contain non‑empty outputs:
+
+    OUT_CSV/features_all_patients.csv
+    OUT_CSV/histograms/
+    OUT_CSV/plots/
+    OUT_CSV/significant_feature_analysis/
+    OUT_CSV/thrombus_slices/
+
+# 4. Pipeline Modules
+
+The pipeline consists of five modules executed by main.py.
+Each module produces its own outputs. A more detailed description of inputs,
+outputs, and internal processing is included directly in the code of each module.
+
+# 4.1 feature_extraction.py
+
+Purpose:
+    Extracts intensity‑based features from thrombus regions across all CT phases.
+
+Main operations:
+    - loads thrombus mask and CT phases
+    - computes statistical descriptors (mean, SD, min, max, percentiles)
+    - computes skewness, kurtosis, entropy, energy
+    - computes phase‑to‑phase and native‑to‑phase deltas
 
 Output:
-histograms/<patient_id>_histograms.png
+    features_all_patients.csv
 
-## 4.3 cluster_plots_stats.py
+# 4.2 histogram_function.py
 
-Per‑feature hierarchical clustering, silhouette scoring, normality testing, statistical testing, and significance assignment.
+Purpose:
+    Generates histograms for each patient and phase.
 
-Outputs:
-- cluster_stats_k2.csv
-- dendrograms
-- scatterplots
-
-## 4.4 feature_and_patient_overview.py
-
-Performs:
-- selection of significant features
-- patient‑level clustering
-- feature correlation analysis
-- feature dendrogram
-- patient co‑clustering
-
-## 4.5 thrombus_viewing.py
-
-Exports representative thrombus slices for qualitative inspection.
+Main operations:
+    - extracts voxel intensities from thrombus mask
+    - computes histogram distributions
+    - plots histograms for all phases
 
 Output:
-thrombus_slices/<patient_id>_slice.png
+    histograms/<patient_id>_histograms.png
 
-# 5. Outputs
+# 4.3 cluster_plots_stats.py
 
-All outputs are stored in OUT_CSV.
+Purpose:
+    Performs per‑feature hierarchical clustering and statistical testing.
 
-## 5.1 Feature Extraction
-features_all_patients.csv
+Main operations:
+    - standardizes features
+    - hierarchical clustering (Ward)
+    - silhouette scoring
+    - normality testing
+    - Mann‑Whitney U tests
+    - significance assignment
 
-## 5.2 Histograms
-histograms/<patient_id>_histograms.png
+Output:
+    cluster_stats_k2.csv
+    dendrograms and scatterplots
 
-## 5.3 Per‑Feature Clustering
-cluster_stats_k2.csv, dendrograms, scatterplots
+# 4.4 feature_and_patient_level_overview.py
 
-## 5.4 Patient‑Level Clustering
-patient_clusters_ward_sign_1.csv
-dendrogram_ward_sign_1.png
-correlation matrix + heatmap
-feature dendrogram
+Purpose:
+    Performs patient‑level clustering and feature significance analysis.
 
-## 5.5 Co‑Clustering
-co‑clustering matrix
-co‑clustering heatmap
+Main operations:
+    - selects significant features
+    - computes correlation matrices
+    - generates dendrograms
+    - performs patient co‑clustering
 
-## 5.6 Thrombus Slice Export
-thrombus_slices/<patient_id>_slice.png
+Output:
+    patient_clusters_ward_sign_1.csv
+    correlation heatmaps and dendrograms
 
-# 6. Limitations
+# 4.5 thrombus_viewing.py
 
-- Strict dataset naming and structure required
-- Fully automated — no manual overrides
-- Runtime increases with dataset size
-- Minor ITK warnings expected for clinical CT data
+Purpose:
+    Exports representative thrombus slices for qualitative inspection.
 
-# 7. Summary
+Main operations:
+    - identifies slices containing thrombus
+    - centers thrombus in a fixed canvas
+    - draws pixel‑accurate thrombus outline
+    - exports slices for all phases and patients
 
-The pipeline performs:
-- intensity‑based feature extraction
-- histogram generation
-- hierarchical clustering and significance testing
-- patient‑level clustering
-- feature correlation and dendrogram analysis
-- patient co‑clustering
-- thrombus slice export
 
-# 8. Possible Applications
+Output:
+    thrombus_slices/<patient_id>/<phase>/slice_XXX.png
 
-The pipeline can support studies relating thrombus imaging characteristics to:
-- histology
-- treatment response
-- recanalization success
-- functional outcomes
-- biological heterogeneity
+# 5. Limitations
 
-# 9. Differences Between Thesis Results and Pipeline Output
+    - Strict dataset structure required.
+    - Fully automated pipeline; no manual overrides.
+    - Runtime increases with dataset size.
 
-Development‑phase results may differ due to occasional manual adjustments.
-The final pipeline is fully automated and does not allow manual intervention,
-so outputs may not match development‑phase results exactly.
+    - ITK Warning:
+        During DICOM loading, SimpleITK may issue a warning such as:
+            “Non‑uniform sampling or missing slices detected”
+        This warning is expected for clinical CT datasets and does not indicate missing slices.
+        It results from limited floating‑point precision in DICOM metadata.
+        The reconstructed volume is valid and the warning does not affect feature extraction,
+        segmentation alignment, or any downstream analysis.
 
-# Note on ITK Warning
+# 6. Summary
 
-A warning about non‑uniform sampling is expected for clinical CT datasets and does not indicate a problem.
-It results from limited floating‑point precision in DICOM metadata.
+The pipeline provides:
+    - automated feature extraction
+    - histogram generation
+    - hierarchical clustering and statistical testing
+    - patient‑level clustering and correlation analysis
+    - export of representative thrombus slices
+
+It is suitable for:
+    - studying thrombus heterogeneity
+    - exploring quantitative imaging biomarkers
+    - analysing multiphase CT thrombus characteristics
+    - generating reproducible imaging‑based datasets for research

@@ -197,71 +197,63 @@ significant: list of str – names of significant features (sign=1)
 out_dir: str – directory where co-clustering outputs will be saved (from config.toml)
 
 This function:
-    Performs patient–patient co-clustering across feature families using Ward linkage.
+    Performs patient–patient co-clustering across features using Ward linkage.
     Saves:
         - co-clustering CSV
         - co-clustering heatmap
 '''
 def co_clustering(df_feat, significant, out_dir):
 
+
     patients = df_feat["Patient"].values
     n_patients = len(patients)
 
-    base_to_cols = {}
-    for col in significant:
-        base = col.split("_")[0]
-        base_to_cols.setdefault(base, []).append(col)
-
-    PER_FAMILY_N_CLUSTERS = 2
-    min_cols_per_family = 1
+    PER_FEATURE_N_CLUSTERS = 2
 
     co_counts = np.zeros((n_patients, n_patients), dtype=float)
-    family_counts = 0
+    feature_counts = 0
 
-    print("Starting per-feature-family patient clustering (significant features only)...")
+    print("Starting per-feature patient clustering (significant features only)...")
 
-    for base, cols in sorted(base_to_cols.items()):
+    for feat in significant:
 
-        if len(cols) < min_cols_per_family:
+        if feat not in df_feat.columns:
             continue
 
-        subX = df_feat[cols].copy()
+        arr = df_feat[[feat]].copy()
 
-        var_f = subX.var(axis=0)
-        nonzero_cols_f = var_f[var_f > 0].index.tolist()
-        if len(nonzero_cols_f) == 0:
+        var_f = arr.var(axis=0)
+        if var_f.iloc[0] == 0:
             continue
-
-        subX = subX[nonzero_cols_f]
 
         scaler_f = StandardScaler()
-        subX_scaled = scaler_f.fit_transform(subX)
+        arr_scaled = scaler_f.fit_transform(arr)
 
-        Z_fam = linkage(subX_scaled, method="ward")
-        labels_fam = fcluster(Z_fam, PER_FAMILY_N_CLUSTERS, criterion="maxclust")
+        Z_feat = linkage(arr_scaled, method="ward")
+        labels_feat = fcluster(Z_feat, PER_FEATURE_N_CLUSTERS, criterion="maxclust")
 
-        family_counts += 1
+        feature_counts += 1
 
         for i in range(n_patients):
             for j in range(i + 1, n_patients):
-                if labels_fam[i] == labels_fam[j]:
+                if labels_feat[i] == labels_feat[j]:
                     co_counts[i, j] += 1
                     co_counts[j, i] += 1
 
-    print(f"Used {family_counts} feature families for patient co-clustering.")
+    print(f"Used {feature_counts} individual features for patient co-clustering.")
 
-    if family_counts == 0:
-        print("No feature families available for co-clustering.")
+    if feature_counts == 0:
+        print("No features available for co-clustering.")
         return
 
-    co_fraction = co_counts / float(family_counts)
+    co_fraction = co_counts / float(feature_counts)
 
     co_df = pd.DataFrame(co_fraction, index=patients, columns=patients)
     co_df.to_csv(os.path.join(out_dir, "patient_patient_co_clustering_fraction_sign_1.csv"))
 
     plt.figure(figsize=(10, 8))
     plt.imshow(co_fraction, cmap="viridis", vmin=0, vmax=1)
-    plt.colorbar(label="Fraction of families co-clustered")
+    plt.colorbar(label="Fraction of features co-clustered")
     plt.xticks(range(n_patients), patients, rotation=90)
     plt.yticks(range(n_patients), patients)
     plt.title("Patient–Patient Co-Clustering Fraction (Ward, significant features)")
