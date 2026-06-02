@@ -2,26 +2,23 @@ import os
 import pandas as pd
 import tomli
 
-from bakalarska_praca.sec.thrombus_pipeline.thrombus_viewing import export_thrombus_slices
-from bakalarska_praca.sec.thrombus_pipeline.loader_functions import load_patient_data, find_patients
-from feature_extraction import extract_features_for_all_patients
-from bakalarska_praca.sec.thrombus_pipeline.histogram_function import plot_histograms
+from sec.thrombus_pipeline.thrombus_viewing import export_thrombus_slices
+from sec.thrombus_pipeline.loader_functions import load_patient_data, find_patients
+from sec.thrombus_pipeline.feature_extraction import extract_features_for_all_patients
+from sec.thrombus_pipeline.histogram_function import plot_histograms
 
-from bakalarska_praca.sec.thrombus_pipeline.cluster_plots_stats import (
+from sec.thrombus_pipeline.cluster_plots_stats import (
     load_feature_csv,
     process_all_features
 )
 
-from bakalarska_praca.sec.thrombus_pipeline.feature_and_patient_level_overview import (
+from sec.thrombus_pipeline.feature_and_patient_level_overview import (
     load_data,
     select_significant_features,
     cluster_patients,
     analyze_features,
     co_clustering
 )
-
-
-
 
 def main(root=None, out_csv=None):
 
@@ -121,3 +118,6 @@ def main(root=None, out_csv=None):
 
 if __name__ == "__main__":
     main()
+
+
+

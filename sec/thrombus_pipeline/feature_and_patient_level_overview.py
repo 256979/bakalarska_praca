@@ -8,9 +8,7 @@ from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
 from scipy.spatial.distance import squareform
 
 
-
-
-# LOAD DATA
+# 1. LOAD DATA
 
 '''
 patient_values_path: str - path to the patient feature CSV (from config.toml)
@@ -24,8 +22,9 @@ This function:
         df_feat – patient-feature matrix
         df_sign – feature-sign table with columns ["feature", "sign"]
 '''
-def load_data(patient_values_path, sign_path):
 
+
+def load_data(patient_values_path, sign_path):
     df_feat = pd.read_csv(patient_values_path)
 
     if "Patient" not in df_feat.columns:
@@ -42,8 +41,7 @@ def load_data(patient_values_path, sign_path):
 
 
 
-
-# SELECT SIGNIFICANT FEATURES
+# 2. SELECT SIGNIFICANT FEATURES
 
 '''
 df_feat: DataFrame – patient-feature matrix
@@ -56,8 +54,9 @@ This function:
         df_feat_filtered – patient-feature matrix with only significant features
         significant – list of significant feature names
 '''
-def select_significant_features(df_feat, df_sign):
 
+
+def select_significant_features(df_feat, df_sign):
     significant = df_sign.loc[df_sign["sign"] == 1, "feature"].tolist()
     significant = [f for f in significant if f in df_feat.columns]
 
@@ -69,7 +68,7 @@ def select_significant_features(df_feat, df_sign):
 
 
 
-# 3. PATIENT CLUSTERING (WARD)
+# 3. PATIENT CLUSTERING
 
 '''
 df_feat: DataFrame – patient-feature matrix (significant features only)
@@ -84,8 +83,9 @@ This function:
     Returns:
         labels – cluster labels for each patient
 '''
-def cluster_patients(df_feat, significant, out_dir):
 
+
+def cluster_patients(df_feat, significant, out_dir):
     X = df_feat[significant].copy()
     X = X.loc[:, X.var() > 0]
 
@@ -111,7 +111,7 @@ def cluster_patients(df_feat, significant, out_dir):
 
 
 
-# 4. FEATURE CORRELATION + DENDROGRAM (UPDATED)
+# 4. FEATURE CORRELATION + DENDROGRAM
 
 '''
 df_feat: DataFrame – patient-feature matrix (significant features only)
@@ -125,23 +125,24 @@ This function:
         - LOWER-HALF-ONLY correlation heatmap (fullscreen)
         - feature dendrogram
 '''
+
+
 def analyze_features(df_feat, significant, out_dir):
-
-
+    # Compute correlation matrix
     corr = df_feat[significant].corr()
     corr.to_csv(os.path.join(out_dir, "feature_feature_correlation_matrix_sign_1.csv"))
 
-
+    # Sort features for consistent layout
     corr = corr.loc[significant, significant]
 
-
+    # === CREATE LOWER TRIANGLE ONLY ===
     lower = corr.copy()
     for i in range(len(lower)):
         for j in range(len(lower)):
             if j > i:
-                lower.iat[i, j] = np.nan
+                lower.iat[i, j] = np.nan  # remove upper half completely
 
-
+    # === PLOT LOWER HALF ONLY (FULL WINDOW) ===
     plt.figure(figsize=(70, 60), dpi=100)
 
     im = plt.imshow(lower, cmap="coolwarm", vmin=-1, vmax=1)
@@ -162,13 +163,12 @@ def analyze_features(df_feat, significant, out_dir):
 
     plt.title("Feature–Feature Correlation Matrix (Lower Half Only)", fontsize=60)
 
-
-    plt.subplots_adjust(left=0.18, bottom=0.38, right=0.98, top=0.92)
+    plt.subplots_adjust(right=0.99, top=0.99)
 
     plt.savefig(os.path.join(out_dir, "feature_feature_corr_lower_half_sign_1.png"), dpi=150)
     plt.close()
 
-
+    # === FEATURE DENDROGRAM ===
     corr_dist = 1 - np.abs(corr.values)
     condensed = squareform(corr_dist, checks=False)
 
@@ -188,23 +188,22 @@ def analyze_features(df_feat, significant, out_dir):
 
 
 
-
 # 5. PATIENT–PATIENT CO-CLUSTERING
 
 '''
-df_feat: DataFrame – patient-feature matrix containing only significant features
+df_feat: DataFrame – patient-feature matrix containing ONLY significant features
 significant: list of str – names of significant features (sign=1)
 out_dir: str – directory where co-clustering outputs will be saved (from config.toml)
 
 This function:
-    Performs patient–patient co-clustering across features using Ward linkage.
+    Performs patient–patient co-clustering across feature families using Ward linkage.
     Saves:
         - co-clustering CSV
         - co-clustering heatmap
 '''
+
+
 def co_clustering(df_feat, significant, out_dir):
-
-
     patients = df_feat["Patient"].values
     n_patients = len(patients)
 

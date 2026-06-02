@@ -123,7 +123,7 @@ def extract_phase_number(path):
 # PATIENT DISCOVERY
 
 '''
-root: str – str – dataset root directory (provided via config.toml)
+root: str – path to the dataset root directory
 output: list[str] – sorted list of patient folder paths
 
 This function:
@@ -141,6 +141,7 @@ def find_patients(root):
     )
 
 
+
 # FIND DICOM
 
 '''
@@ -149,18 +150,18 @@ output: str(dicom_path) or None – path to the native DICOM directory, or None 
 
 This function:
     Recursively searches the patient directory
-    Identifies the native DICOM folder by matching the name "nativ", "native"
+    Identifies the native DICOM folder by matching the name "nativ"
     Returns the path to the DICOM directory or None if missing
 '''
 
 def find_dicom(patient_dir):
 
     for dicom_path, dirs, files in os.walk(patient_dir):
-        name = os.path.basename(dicom_path).lower()
-        if name == "nativ" or name == "native":
+        if os.path.basename(dicom_path).lower() == "nativ":
             return dicom_path
 
     return None
+
 
 
 # LOAD CT
