@@ -137,8 +137,8 @@ Note:
 ## 3.7 Dataset rules (must be satisfied)
 
     - Patient folder name must contain digits only.
-    - Native CT folder must be named “native” or “nativ”.
-    - Segmentation file must contain “seg” in the filename.
+    - Native CT folder must be named “nativ”.
+    - Segmentation file must contain “seg” in the filename. Must be binary(1-thrombus, 0-background)
     - Phase files must be NIfTI and contain a phase number.
     - All NIfTI files must share identical geometry and RAS+ orientation.
 
@@ -147,7 +147,7 @@ If these conditions are not met, the patient is skipped.
 ## 3.8 Run the pipeline
 
 Standard run (uses config.toml):
-    python main.py
+    python3 main.py
 
 Run with command‑line overrides:
     python3 main.py --root /path/to/dataset --out /path/to/output
@@ -158,7 +158,10 @@ The script will:
     - run feature extraction, histograms, clustering, and slice export
     - write outputs into OUT_CSV and its subfolders
 
-![]("C:\Users\mataf\OneDrive\Documents\pipeline.pdf")
+Note: The imports used throughout the pipeline (e.g., `from sec.thrombus_pipeline.loader_functions import ...`) were designed and tested for execution directly from the terminal. Depending on how the package is installed or how the code is executed (e.g., inside an IDE, notebook, or different working directory), these relative imports may need to be adapted to match the local project structure.
+
+
+![](bakalarska_praca/Pictures/pipeline.pdf)
 
 ## 3.9 Verifying successful execution
 

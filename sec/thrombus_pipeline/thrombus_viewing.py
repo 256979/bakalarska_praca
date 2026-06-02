@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-
-from loader_functions import load_patient_data, find_patients
+#if does not work - try deleting sec.thrombus_pipeline
+from sec.thrombus_pipeline.loader_functions import load_patient_data, find_patients
 
 
 
@@ -68,7 +68,7 @@ This function:
     - For each phase (Native, P1, P2, P3):
         * Creates subfolder phase_name/ with normal PNGs
         * Renders each slice using _render_slice()
-        * Saves normal slices only (no annotation)
+        * Saves normal slices only 
     - Skips patients with missing data.
     - Prints progress and completion messages.
 '''
@@ -150,58 +150,3 @@ def export_thrombus_slices(ROOT, OUT_DIR):
 
 
 
-# HEAD SLICE VISUALISATION
-
-'''
-native, P1, P2, P3 : 3D NumPy arrays
-    Full CT volumes for native and contrast phases.
-SLICE : int
-    Axial slice index to export.
-patient_id : int or str
-    Patient identifier for labeling.
-out_dir : str
-    Output directory where the figure will be saved.
-
-This function:
-    Extracts the same axial slice from:
-        - Native CT
-        - Phase 1
-        - Phase 2
-        - Phase 3
-    Arranges them side‑by‑side in a 4‑panel figure.
-    Saves the figure to disk (PNG format).
-    Does NOT display the figure on screen.
-    Intended for quick visual inspection of alignment and quality.
-'''
-def show_raw_slices(native, P1, P2, P3, SLICE, patient_id, out_dir):
-
-    slice_native = native[:, :, SLICE]
-    slice_p1 = P1[:, :, SLICE]
-    slice_p2 = P2[:, :, SLICE]
-    slice_p3 = P3[:, :, SLICE]
-
-    fig, ax = plt.subplots(1, 4, figsize=(25, 6))
-
-    ax[0].imshow(slice_native, cmap="gray")
-    ax[0].set_title(f"Native (Patient {patient_id})")
-    ax[0].axis("off")
-
-    ax[1].imshow(slice_p1, cmap="gray")
-    ax[1].set_title(f"Phase 1 (Patient {patient_id})")
-    ax[1].axis("off")
-
-    ax[2].imshow(slice_p2, cmap="gray")
-    ax[2].set_title(f"Phase 2 (Patient {patient_id})")
-    ax[2].axis("off")
-
-    ax[3].imshow(slice_p3, cmap="gray")
-    ax[3].set_title(f"Phase 3 (Patient {patient_id})")
-    ax[3].axis("off")
-
-    plt.tight_layout()
-
-    os.makedirs(out_dir, exist_ok=True)
-    save_path = os.path.join(out_dir, f"patient_{patient_id}_slice_{SLICE}.png")
-    plt.savefig(save_path, dpi=150)
-
-    plt.close(fig)

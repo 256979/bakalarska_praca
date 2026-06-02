@@ -7,6 +7,21 @@ from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
 from sklearn.metrics import silhouette_score
 from scipy.stats import shapiro, ttest_ind, mannwhitneyu
 
+"""
+CSV LOADER
+
+path: str – path to the feature CSV file
+output:
+    df – full DataFrame
+    patient_ids – array of patient identifiers (string)
+    features – list of feature names (columns 2…end)
+
+This function:
+    Loads the feature CSV file
+    Extracts patient IDs from the first column
+    Extracts feature names from the remaining columns
+"""
+
 
 def load_feature_csv(path):
     df = pd.read_csv(path)
@@ -14,6 +29,22 @@ def load_feature_csv(path):
     features = df.columns[1:]
     return df, patient_ids, features
 
+"""
+HIERARCHICAL CLUSTERING (Ward)
+
+data: 1D NumPy array – feature values
+k: int – number of clusters (default 2)
+
+output:
+    Z – linkage matrix
+    labels – cluster assignments
+    sil – silhouette score
+
+This function:
+    Performs Ward hierarchical clustering on a single feature
+    Cuts the dendrogram into k clusters
+    Computes the silhouette score if clustering is valid
+"""
 
 def cluster_feature(data, k=2):
     Z = linkage(data.reshape(-1, 1), method="ward")
@@ -23,12 +54,39 @@ def cluster_feature(data, k=2):
         if len(np.unique(labels)) > 1 else np.nan
 
     return Z, labels, sil
+"""
+CHECK SPLIT
+
+Z: linkage matrix
+output: bool – True if the  split produces exactly two clusters
+
+This function:
+    Extracts the distance of the second‑last merge
+    Cuts the dendrogram at that height
+    Checks whether the root split yields two clusters
+"""
 
 
 def check_split_is_two(Z):
     second_last_dist = Z[-2, 2]
     labels = fcluster(Z, second_last_dist, criterion="distance")
     return len(np.unique(labels)) == 2
+"""
+STATISTICAL TESTING
+
+data: 1D array – feature values
+labels: array – cluster assignments
+
+output: dict – cluster sizes, means, normality p-values,
+                test used, test statistic, p-value
+
+This function:
+    Splits data into two clusters
+    Tests normality (Shapiro–Wilk)
+    Uses Welch t-test if both clusters are normal
+    Otherwise uses Mann–Whitney U
+    Returns all relevant statistics
+"""
 
 
 def compute_statistics(data, labels):
@@ -62,6 +120,18 @@ def compute_statistics(data, labels):
         "test_statistic": stat,
         "p_value": p_val
     }
+"""
+DENDROGRAM PLOTTER
+
+lin_m: linkage matrix
+patient_ids: array – labels
+feature: str – feature name
+ax: matplotlib axis
+
+This function:
+    Plots a Ward dendrogram
+    Uses large, readable font sizes for thesis figures
+"""
 
 
 def plot_dendrogram(lin_m, patient_ids, feature, ax):
@@ -78,6 +148,21 @@ def plot_dendrogram(lin_m, patient_ids, feature, ax):
     ax.tick_params(axis='x', labelsize=28)
     ax.tick_params(axis='y', labelsize=28)
 
+"""
+SCATTER PLOTTER
+
+data: 1D array – feature values
+labels: cluster assignments
+patient_ids: array
+feature: str
+k: number of clusters
+ax: axis
+
+This function:
+    Plots patient‑wise feature values
+    Colors points by cluster
+    Uses large markers for visibility
+"""
 
 def plot_scatter(data, labels, patient_ids, feature, k, ax):
     colors = plt.cm.tab10(np.linspace(0, 1, k))
@@ -97,6 +182,17 @@ def plot_scatter(data, labels, patient_ids, feature, k, ax):
     ax.tick_params(axis='y', labelsize=28)
     ax.legend(fontsize=28)
 
+"""
+SAVE PLOTS
+
+Creates a 1×2 figure:
+    left: dendrogram
+    right: scatter plot
+
+This function:
+    Saves the figure to disk
+    Returns the output path
+"""
 
 def save_plots(lin_m, data, labels, patient_ids, feature, plot_dir, k):
     fig, axes = plt.subplots(1, 2, figsize=(30, 15))
@@ -113,6 +209,22 @@ def save_plots(lin_m, data, labels, patient_ids, feature, plot_dir, k):
     plt.close()
 
     return out_path
+
+
+"""
+PROCESS SINGLE FEATURE
+
+Runs the full pipeline for one feature:
+    - clustering
+    - silhouette score
+    - root split check
+    - statistical testing
+    - significance decision
+    - plot generation
+
+Returns:
+    dict with all statistics and significance flag
+"""
 
 
 def process_feature(df, patient_ids, feature, plot_dir, config, k=2):
@@ -157,6 +269,22 @@ def process_feature(df, patient_ids, feature, plot_dir, config, k=2):
         **stats,
         "sign": sign_value
     }
+
+"""
+PROCESS ALL FEATURES
+
+df: DataFrame – full feature table
+patient_ids: array – patient identifiers
+features: list – feature names
+plot_dir: str – output directory
+config: dict – thresholds for silhouette and p-value
+k: int – number of clusters
+
+This function:
+    Iterates over all features
+    Runs process_feature() for each
+    Collects all valid results into a list
+"""
 
 
 def process_all_features(df, patient_ids, features, plot_dir, config, k=2):

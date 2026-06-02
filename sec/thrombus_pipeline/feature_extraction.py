@@ -2,8 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 from scipy.stats import skew, kurtosis
-
-from loader_functions import load_patient_data, find_patients
+#if does not work - try deleting sec.thrombus_pipeline
+from sec.thrombus_pipeline.loader_functions import load_patient_data, find_patients
 
 
 
@@ -97,16 +97,16 @@ def extract_features_for_all_patients(ROOT):
         vox_P2 = data["vox_P2"]
         vox_P3 = data["vox_P3"]
 
-        # 3D t-MIP ACROSS PHASES (P1, P2, P3)
+        # 3D tMIP ACROSS PHASES (P1, P2, P3)
 
 
-        # full 3D phase volumes
+
         data_P1 = data["full_P1"]
         data_P2 = data["full_P2"]
         data_P3 = data["full_P3"]
         seg = data["seg_mask"]
 
-        # Compute voxelwise maximum across phases
+
         Proj_MIP_3D = np.maximum.reduce([data_P1, data_P2, data_P3])
 
         # thrombus voxels

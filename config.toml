@@ -1,10 +1,9 @@
 [paths]
 # Root folder containing all input datasets
-ROOT = "C:/path/to/dataset"
+ROOT = "C:/Users/name/data"
 
 # Folder where CSV outputs will be saved
-OUT_CSV = "C:/path/to/output"
-
+OUT_CSV =  "C:/Users/name/data/results"
 
 [export]
 # Directory for histogram images
