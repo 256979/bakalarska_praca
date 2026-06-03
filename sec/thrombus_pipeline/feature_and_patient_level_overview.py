@@ -128,21 +128,21 @@ This function:
 
 
 def analyze_features(df_feat, significant, out_dir):
-    # Compute correlation matrix
+
     corr = df_feat[significant].corr()
     corr.to_csv(os.path.join(out_dir, "feature_feature_correlation_matrix_sign_1.csv"))
 
-    # Sort features for consistent layout
+
     corr = corr.loc[significant, significant]
 
-    # === CREATE LOWER TRIANGLE ONLY ===
+
     lower = corr.copy()
     for i in range(len(lower)):
         for j in range(len(lower)):
             if j > i:
                 lower.iat[i, j] = np.nan  # remove upper half completely
 
-    # === PLOT LOWER HALF ONLY (FULL WINDOW) ===
+
     plt.figure(figsize=(70, 60), dpi=100)
 
     im = plt.imshow(lower, cmap="coolwarm", vmin=-1, vmax=1)

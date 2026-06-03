@@ -223,7 +223,7 @@ Runs the full pipeline for one feature:
     - plot generation
 
 Returns:
-    dict with all statistics and significance flag
+    dict with all statistics and significance label
 """
 
 

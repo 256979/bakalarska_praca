@@ -96,19 +96,19 @@ Verify:
 
 ## 3.5 Configure paths in config.toml
 
-[paths]
-ROOT = "/absolute/path/to/dataset"
-OUT_CSV = "/absolute/path/to/output"
-
-[export]
-histogram_dir = "histograms"
-plots_dir = "plots"
-significant_feature_dir = "significant_feature_analysis"
-slice_export_dir = "thrombus_slices"
-
-[statistics]
-p_value_threshold = 0.05
-silhouette_threshold = 0.50
+    [paths]
+    ROOT = "/absolute/path/to/dataset"
+    OUT_CSV = "/absolute/path/to/output"
+    
+    [export]
+    histogram_dir = "histograms"
+    plots_dir = "plots"
+    significant_feature_dir = "significant_feature_analysis"
+    slice_export_dir = "thrombus_slices"
+    
+    [statistics]
+    p_value_threshold = 0.05
+    silhouette_threshold = 0.50
 
 Note:
     Paths can also be set through command line when running main.py:
@@ -161,7 +161,7 @@ The script will:
 Note: The imports used throughout the pipeline (e.g., `from sec.thrombus_pipeline.loader_functions import ...`) were designed and tested for execution directly from the terminal. Depending on how the package is installed or how the code is executed (e.g., inside an IDE, notebook, or different working directory), these relative imports may need to be adapted to match the local project structure.
 
 
-![](bakalarska_praca/Pictures/pipeline.pdf)
+
 
 ## 3.9 Verifying successful execution
 
@@ -179,6 +179,8 @@ and the following folders contain non‑empty outputs:
 The pipeline consists of modules executed by main.py.
 Each module produces its own outputs. A more detailed description of inputs,
 outputs, and internal processing is included directly in the code of each module.
+
+![pipeline4.drawio.png](../../../OneDrive/Documents/pipeline4.drawio.png)
 
 # 4.1 loader_functions.py
 
@@ -328,13 +330,16 @@ Output:
 # 5. Limitations
 
 - Strict dataset structure required.
-- Fully automated pipeline; no manual overrides.
-- Runtime increases with dataset size.
+- Strict naming requirements.
+- Fully automated pipeline, no manual overrides.
+- Runtime increases with dataset size, possibility of running out of computational runtime
+- Can be used only for two clusters
+
 
 - ITK Warning:
     During DICOM loading, SimpleITK may issue a warning such as:
         “Non‑uniform sampling or missing slices detected”
-    This warning is expected for clinical CT datasets and does not indicate missing slices.
+    This warning is expected for clinical CT datasets and does not indicate missing slices, the non-uniform sampling value is very minimal.
     It results from limited floating‑point precision in DICOM metadata.
     The reconstructed volume is valid and the warning does not affect feature extraction,
     segmentation alignment, or any downstream analysis.
@@ -352,4 +357,4 @@ It is suitable for:
     - studying thrombus heterogeneity
     - exploring quantitative imaging biomarkers
     - analysing multiphase CT thrombus characteristics
-    - generating reproducible imaging‑based datasets for research
+    - generating reproducible imaging‑based datasets
