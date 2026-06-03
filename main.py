@@ -22,11 +22,11 @@ from sec.thrombus_pipeline.feature_and_patient_level_overview import (
 
 def main(root=None, out_csv=None):
 
-    # Load configuration
+
     with open("config.toml", "rb") as f:
         config = tomli.load(f)
 
-    # ROOT and OUT_CSV as main parameters
+
     ROOT = root if root is not None else config["paths"]["ROOT"]
     OUT_CSV = out_csv if out_csv is not None else config["paths"]["OUT_CSV"]
 
