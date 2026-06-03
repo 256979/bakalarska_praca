@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy.stats import skew, kurtosis
-#if does not work - try deleting sec.thrombus_pipeline
+#if does not work - try deleting sec.thrombus_pipeline or adding bakalarska_praca. before sec - see README
 from sec.thrombus_pipeline.loader_functions import load_patient_data, find_patients
 
 
